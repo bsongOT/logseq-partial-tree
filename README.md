@@ -19,3 +19,15 @@ So I created this plugin.
 - You can view or hide layer that means what connection it is. (setting visiblity)
 
 - You can open any page with Shift + Click.
+
+## How to use
+
+Terminal
+
+`npm install`
+
+`npm run build`
+
+Logseq
+
+`Load unpacked plugin`
