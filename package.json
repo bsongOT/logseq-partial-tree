@@ -1,0 +1,23 @@
+{
+    "name": "partial-tree",
+    "version": "v0.1.0",
+    "logseq": {
+        "title": "Partial Tree",
+        "main": "dist/index.html",
+        "id": "logseq-partial-tree",
+        "icon": "icons/icon.png"
+    },
+    "scripts": {
+        "dev": "parcel ./index.html",
+        "build": "parcel build --public-url . --no-source-maps index.html"
+    },
+    "dependencies": {
+        "@logseq/libs": "^0.0.1-alpha.35",
+        "parcel": "^2.8.0"
+    },
+    "devDependencies": {
+        "@types/node": "^18.11.9",
+        "parcel-bundler": "^1.12.5",
+        "typescript": "^4.9.3"
+    }
+}
