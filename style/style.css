@@ -56,6 +56,7 @@ input[type="radio"].mouse-mode{
 #setting-contents{
     margin: 10px;
     overflow-y: scroll;
+    height: 610px;
 }
 h3{
     margin-bottom: 5px;
@@ -84,6 +85,7 @@ ul{
 .node > text{
     user-select: none;
     cursor: default;
+    clip-path: url(#textMask);
 }
 .node:hover > rect{
     filter: brightness(90%);

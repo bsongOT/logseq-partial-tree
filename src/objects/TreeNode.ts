@@ -24,12 +24,22 @@ export class TreeNode extends TreeObject{
     public children:TreeNode[];
     public edges:TreeEdge[];
     protected readonly element:SVGGElement;
-    private readonly childCount:number;
+    public get childCount():number{
+        return this.child_count;
+    }
+    public set childCount(value){
+        this.child_count = value;
+        const countText = this.element.querySelector<HTMLElement>(".child-count")
+        if (!countText) return;
+        countText.textContent = `(${value})`;
+    }
+    private child_count:number = 0;
 
     public constructor(layer:Layer, x:number, y:number, page:PageEntity, childCount:number){
         super();
-        [this.page, this.children, this.edges, this.childCount] = [page, [], [], childCount];
+        this.page = page;
         this.element = layer.add("beforeend", this.toHTML()) as SVGGElement;
+        [this.children, this.edges, this.childCount] = [[], [], childCount];
         [this.x, this.y] = [x, y];
 
         this.element.addEventListener("click", async (e) => {
@@ -82,7 +92,7 @@ export class TreeNode extends TreeObject{
         return `
             <g class="node" data-x="0" data-y="0" transform="translate(0, 0)" stroke="black" stroke-dasharray="none">
                 <rect x="0" y="-8" width="100" height="16" fill="white" stroke="black" stroke-width="1"></rect>
-                <text x="2" y="0" mask="url(#textMask)" dominant-baseline="middle" fill="black" stroke="none">${this.page.name}<tspan class="child-count">(${this.childCount})</tspan></text>
+                <text x="2" y="0" dominant-baseline="middle" fill="black" stroke="none">${this.page.name}<tspan class="child-count">(0)</tspan></text>
             </g>
         `;
     }

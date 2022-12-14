@@ -71,13 +71,15 @@ class Leader {
         for (let i = 0; i < refPairs?.length; i++) {
             let pos = { x:parent.x + gap + nodeWidth, y: parent.y };
 
-            let crefs = await classifyLink(refPairs[i].page);
-            let childCount = crefs.nsPages.length + crefs.simpleRefPages.length + Object.values(crefs.propPages).flat().length;
-            let node = new TreeNode(this.layers[refPairs[i].id], pos.x, pos.y, refPairs[i].page, childCount);
+            //let crefs = await classifyLink(refPairs[i].page);
+            let node = new TreeNode(this.layers[refPairs[i].id], pos.x, pos.y, refPairs[i].page, 0);
             let edge = new TreeEdge(this.layers[refPairs[i].id], parent, node, refPairs[i].kind);
-
+            
             parent.children.push(node);
             parent.edges.push(edge);
+            classifyLink(refPairs[i].page).then((crefs) => {
+                node.childCount = crefs.nsPages.length + crefs.simpleRefPages.length + Object.values(crefs.propPages).flat().length;
+            });
         }
     }
 

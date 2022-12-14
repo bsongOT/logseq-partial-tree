@@ -5,10 +5,10 @@ export const keydown = (e:KeyboardEvent) =>{
         leader.shiftkey = true;
     }
     else if (e.code === "Digit1"){
-        leader.mode = "toggle"
+        document.querySelector<HTMLElement>("#toggle-mode")?.click();
     }
     else if (e.code === "Digit2"){
-        leader.mode = "flag";
+        document.querySelector<HTMLElement>("#flag-mode")?.click();
     }
     else if (e.code === "Escape"){
         logseq.hideMainUI();

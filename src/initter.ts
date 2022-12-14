@@ -23,9 +23,9 @@ export async function initDOM(){
             </label>
         </div>
         <svg id="tree" viewBox="0 0 800 670">
-            <mask id="textMask">
+            <clipPath id="textMask">
                 <rect x="0" y="-8" width="100" height="16" fill="white"></rect>
-            </mask>
+            </clipPath>
         </svg>
         <div id="setting">
             <h1 id="setting-title">Settings</h1>
