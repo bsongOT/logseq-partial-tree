@@ -50,7 +50,7 @@ export class TreeNode extends TreeObject{
             else {
                 if (leader.mode === "toggle"){
                     if (this.children.length <= 0) {
-                        let crefs = await classifyLink(this.page);
+                        let crefs = await classifyLink(this.page, leader.linkDir);
                         await leader.insertChildren(this, crefs);
                         await leader.updatePos(leader.root);
                     }

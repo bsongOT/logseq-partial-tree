@@ -1,3 +1,4 @@
+import { threadId } from "worker_threads";
 import { leader } from "../main";
 import { SettingLayer } from "./SettingLayer";
 import { SettingPanel } from "./SettingPanel";
@@ -41,6 +42,14 @@ export class Layer extends TreeObject{
         [this.kind, this.color, this.dash] = [kind, color, dash];
 
         leader.relations.push(kind);
+    }
+    public remove(){
+        this.element.remove();
+        this.setting.remove();
+        leader.relations.splice(
+            leader.relations.map(a => a.join("-")).indexOf((this.kind ?? [""]).join("-")),
+            1
+        )
     }
     protected toHTML(): string {
         return `<g class="layer"></g>`

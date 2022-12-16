@@ -1,9 +1,16 @@
 import { init, leader } from "./main";
 import { keydown, keyup } from "./shortkeyHandler";
 
+function click(e:MouseEvent){
+    const target = e.target as HTMLElement;
+    if (["logseq-partial-tree-app", "body"].includes(target.id))
+        logseq.hideMainUI();
+}
 export async function initDOM(){
+    document.removeEventListener("click", click);
     document.removeEventListener("keydown", keydown);
     document.removeEventListener("keyup", keyup);
+    document.addEventListener("click", click);
     document.addEventListener("keydown", keydown);
     document.addEventListener("keyup", keyup);
     let app = document.querySelector<HTMLElement>("#logseq-partial-tree-app");
@@ -35,6 +42,9 @@ export async function initDOM(){
                     <li><button class="reload-button" id="logseq-reload">Load current logseq page</button><br></li>
                     <li><button class="reload-button" id="window-reload">Reload current window page</button><br></li>
                 </ul>
+                <h3>Link Direction</h3>
+                    <label id="link-dir-label" for="link-dir">←</label>
+                    <input id="link-dir" type="checkbox" style="display:none;">
                 <h3>Visiblity</h3>
                 <ul id="setting-visiblity">
                 </ul>
@@ -56,6 +66,17 @@ export async function initDOM(){
     });
     mouseModes[1].addEventListener("change", function(){
         leader.mode = "flag";
+    });
+
+    const linkDir = document.querySelector<HTMLInputElement>("#link-dir");
+    linkDir?.addEventListener("change", async function(){
+        const label = document.querySelector<HTMLElement>("#link-dir-label")
+        if (!label) return;
+        label.innerText = this.checked ? "→" : "←";
+        leader.root?.remove();
+        leader.layers.forEach(l => l.remove())
+        leader.layers = [];
+        leader.draw();
     });
 }
 export async function initTrigger() {

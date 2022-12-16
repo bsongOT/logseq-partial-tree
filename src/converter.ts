@@ -2,7 +2,7 @@ import '@logseq/libs'
 import { PageEntity } from '@logseq/libs/dist/LSPlugin.user';
 
 const systemProps = ["title", "alias"];
-const refQuery = (name:string) => `[
+const refBackQuery = (name:string) => `[
     :find (pull ?p [*])
     :where
     [?cp :block/name "${name}"]
@@ -11,7 +11,22 @@ const refQuery = (name:string) => `[
     (not [?np :block/namespace ?cp]
         [?b :block/refs ?np])
 ]`
-const nsQuery = (name:string) => `[
+const refForwardQuery = (name:string) => `[
+    :find (pull ?p [*])
+    :where
+    [?cp :block/name "${name}"]
+    [?b :block/refs ?p]
+    [?b :block/page ?cp]
+    (not [?np :block/namespace ?p]
+        [?b :block/refs ?np])
+]`;
+const nsBackQuery = (name:string) => `[
+    :find (pull ?p [*])
+    :where
+    [?cp :block/name "${name}"]
+    [?cp :block/namespace ?p]
+]`
+const nsForwardQuery = (name:string) => `[
     :find (pull ?p [*])
     :where
     [?cp :block/name "${name}"]
@@ -53,30 +68,48 @@ export class PagePair {
     }
 }
 
-export async function classifyLink(page: PageEntity): Promise<PageRef> {
+export async function classifyLink(page: PageEntity, isBacklink:boolean): Promise<PageRef> {
     // simple reference | property
+    const refQuery = isBacklink ? refBackQuery : refForwardQuery;
+    const nsQuery = isBacklink ? nsBackQuery : nsForwardQuery;
+
     let refPages: any[] = (await logseq.DB.datascriptQuery(refQuery(page?.name))).map((a: PageEntity[]) => a[0]);
     
     let onlyRefPages: PageEntity[] = [];
     let propPages: Record<string, PageEntity[]> = {};
     let namespacingPages: PageEntity[] = (await logseq.DB.datascriptQuery(nsQuery(page?.name))).map((a: PageEntity[]) => a[0]);
 
-    const keys = [...new Set(
-        refPages.map(
-            p => p.properties ? Object.keys(p.properties) : ""
-        ).filter(a => a !== "").flat()
-    )
-    ].filter(a => !systemProps.includes(a));
+    let keys:string[]
+    if (isBacklink){ 
+        keys = [...new Set(
+            refPages.map(
+                p => p.properties ? Object.keys(p.properties) : ""
+            ).filter(a => a !== "").flat()
+        )].filter(a => !systemProps.includes(a));
+    }
+    else{
+        keys = [...new Set((page as any).properties ? Object.keys((page as any).properties) : [])].filter(a => !systemProps.includes(a));
+        refPages = refPages.filter(p => !keys.includes(p.name));
+    }
 
     keys.forEach(k => propPages[k] = []);
 
     for (let i = 0; i < refPages?.length; i++) {
         let isProp: boolean = false;
         for (let j = 0; j < keys?.length; j++) {
-            if (!(refPages[i].properties?.[keys[j]] instanceof Array)) continue;
-            if (refPages[i].properties?.[keys[j]]?.includes(page?.name)) {
-                propPages[keys[j]].push(refPages[i] as PageEntity);
-                isProp = true;
+            if (isBacklink){
+                if (!(refPages[i].properties?.[keys[j]] instanceof Array)) continue;
+                if (refPages[i].properties?.[keys[j]]?.some((a:string) => a.toLowerCase() === page?.name?.toLowerCase())) {
+                    propPages[keys[j]].push(refPages[i] as PageEntity);
+                    isProp = true;
+                }
+            }
+            else {
+                if (!((page as any).properties?.[keys[j]] instanceof Array)) continue;
+                if ((page as any).properties?.[keys[j]]?.some((a:string) => a.toLowerCase() === refPages[i].name)){
+                    propPages[keys[j]].push(refPages[i] as PageEntity);
+                    isProp = true;
+                }
             }
         }
         if (isProp) continue;

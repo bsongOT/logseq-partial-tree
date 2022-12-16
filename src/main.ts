@@ -34,25 +34,31 @@ class Leader {
     public readonly settingPanel:SettingPanel;
     public mode:MouseMode;
     public shiftkey = false;
+    private linkCheckbox:HTMLInputElement|null;
+    public get linkDir(){
+        return !this.linkCheckbox?.checked;
+    }
     
     constructor(rootPage?:PageEntity) {
         this.mode = "toggle";
 
         this.tree = new SVG(document.querySelector<SVGSVGElement>("#tree"));
         this.settingPanel = new SettingPanel();
+        this.linkCheckbox = document.querySelector<HTMLInputElement>("#link-dir");
         this.draw(rootPage);
     }
 
-    private async draw(rootPage?: PageEntity) {
+    public async draw(rootPage?: PageEntity) {
         if (!this.tree) return;
         
-        let page = rootPage ?? await logseq.Editor.getCurrentPage() as PageEntity;
+        let page = rootPage ?? await logseq.Editor.getCurrentPage() as PageEntity | null;
+        if (!page) return;
 
         this.layers.push(new Layer(this.tree, this.settingPanel, ["property", ""], "#000000"));
         this.layers.push(new Layer(this.tree, this.settingPanel, ["reference"], "#87CEEB", "5 5"));
         this.layers.push(new Layer(this.tree, this.settingPanel, ["namespace"], "#000000", "3 3"));
 
-        let crefs = await classifyLink(page);
+        let crefs = await classifyLink(page, this.linkDir);
         let childCount = crefs.nsPages.length + crefs.simpleRefPages.length + Object.values(crefs.propPages).flat().length;
 
         this.root = new TreeNode(this.layers[0], centerX, centerY, page, childCount);
@@ -71,13 +77,12 @@ class Leader {
         for (let i = 0; i < refPairs?.length; i++) {
             let pos = { x:parent.x + gap + nodeWidth, y: parent.y };
 
-            //let crefs = await classifyLink(refPairs[i].page);
             let node = new TreeNode(this.layers[refPairs[i].id], pos.x, pos.y, refPairs[i].page, 0);
             let edge = new TreeEdge(this.layers[refPairs[i].id], parent, node, refPairs[i].kind);
             
             parent.children.push(node);
             parent.edges.push(edge);
-            classifyLink(refPairs[i].page).then((crefs) => {
+            classifyLink(refPairs[i].page, this.linkDir).then((crefs) => {
                 node.childCount = crefs.nsPages.length + crefs.simpleRefPages.length + Object.values(crefs.propPages).flat().length;
             });
         }
@@ -132,6 +137,7 @@ class Leader {
         for (let i = 0; i < keys?.length; i++) {
             this.layers.push(new Layer(this.tree, this.settingPanel, ["property", keys[i]], getRandomRGB()));
         }
+        console.log(keys);
     }
 }
 

@@ -60,6 +60,9 @@ export class SettingLayer extends TreeObject{
             targetLayer.color = this.colorSelector.value;
         });
     }
+    public remove(){
+        this.element.remove();
+    }
     protected toHTML(): string {
         return `
         <li class="setting-layer">
